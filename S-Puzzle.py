@@ -2,9 +2,9 @@ import math
 import time
 from collections import deque
 
-class Puzzle:
+class Node:
     
-    StateRepresentation = []
+    State = []
     size = None
     heuristic = 0
     parent = None
@@ -12,45 +12,37 @@ class Puzzle:
     action = ""
     pathcost = 0
     statepath = ""
+    depth = 0
 
     def __init__(self,path):
+        self.depth = 0
         self.action = ""
         self.parent = None
         self.pathcost = 0
-        self.StateRepresentation = []
+        self.State = []
         self.InitializePathToState(path)
         self.heuristic = self.h3()
     
-    def getRoot(self):
-
-        # print(self.statepath)  
-        # if self.action != None:
-        #     print("--> ", end='')
-        #     print(self.action, end = '')
-        #     print(" | f(n) = " + str(self.h3() + self.g(self.h3())))
-        # if self.parent != None:
-        #     self.parent.getRoot()
-
-        if self.parent == None:
-            return self 
-
-        parentroot = self.parent.getRoot
-
-        return parentroot
     
     def printPath(self):
         
-        if self.child == None:
-            return ""
         
-        return self.statepath + " \n" + self.action + " \n" + self.child.printPath()
+        if self.parent == None:
+            print(self.statepath)
+        else:
+            self.parent.printPath()
+            print(self.action, end = '')
+            print(" --> ", end = "")
+            print(self.statepath) 
+
+        
 
     def flatten(self):
         flattened = []
 
         for row in range(self.size):
             for column in range(self.size):
-                flattened.append(self.StateRepresentation[row][column])
+                flattened.append(self.State[row][column])
 
         return flattened
 
@@ -66,7 +58,7 @@ class Puzzle:
             row = []
             for j in range(self.size):
                 row.append(values[rownum + j])
-            self.StateRepresentation.append(row)
+            self.State.append(row)
             rownum += self.size
         self.SetState()
         return
@@ -77,7 +69,7 @@ class Puzzle:
         for row in range(self.size):
             path += "("
             for column in range(self.size):
-                path += str(self.StateRepresentation[row][column])
+                path += str(self.State[row][column])
                 if column != self.size - 1:
                     path += ";"
             path += ")"
@@ -91,38 +83,39 @@ class Puzzle:
 
     def SwapTile(self,row,column,direction):
         # print("attempting to swap tile at Position " + str(row*3+column + 1) + " in Direction " + direction)
+        self.action = "Tile " + str(self.State[row][column]) + " at postion [" + str(row) + "][" + str(column) + "] moved " + direction + "\n"
         if direction == "up":
             if row == 0:
                 # print("cannot swap up on top row")
                 self.SetState()
                 return False
-            temp = self.StateRepresentation[row -1 ][column]
-            self.StateRepresentation[row - 1][column] = self.StateRepresentation[row][column]
-            self.StateRepresentation[row][column] = temp
+            temp = self.State[row -1 ][column]
+            self.State[row - 1][column] = self.State[row][column]
+            self.State[row][column] = temp
         if direction == "down":
             if row == self.size - 1:
                 # print("cannot swap down on bottom row")
                 self.SetState()
                 return False
-            temp = self.StateRepresentation[row + 1][column]
-            self.StateRepresentation[row + 1][column] = self.StateRepresentation[row][column]
-            self.StateRepresentation[row][column]= temp
+            temp = self.State[row + 1][column]
+            self.State[row + 1][column] = self.State[row][column]
+            self.State[row][column]= temp
         if direction == "left":
             if column == 0:
                 # print("cannot swap left on leftmost column")
                 self.SetState()
                 return False
-            temp = self.StateRepresentation[row][column - 1]
-            self.StateRepresentation[row][column - 1] = self.StateRepresentation[row][column]
-            self.StateRepresentation[row][column] = temp
+            temp = self.State[row][column - 1]
+            self.State[row][column - 1] = self.State[row][column]
+            self.State[row][column] = temp
         if direction == "right":
             if column == (self.size - 1):
                 # print("cannot swap right on rightmost column")
                 self.SetState()
                 return False
-            temp = self.StateRepresentation[row][column + 1]
-            self.StateRepresentation[row][column + 1] = self.StateRepresentation[row][column]
-            self.StateRepresentation[row][column] = temp
+            temp = self.State[row][column + 1]
+            self.State[row][column + 1] = self.State[row][column]
+            self.State[row][column] = temp
         
         self.SetState()
         return True
@@ -133,7 +126,7 @@ class Puzzle:
         for i in range(self.size):
             spacer += "----"
         print(spacer)
-        for row in self.StateRepresentation:
+        for row in self.State:
             for column in row:
                column.PrintTile()
             print()
@@ -147,6 +140,8 @@ class Puzzle:
             for column in range(self.size):
                 if not self.TestTilePosition(row,column):
                     return False
+        print("Solved")
+        self.printPath()
         return True
         
       
@@ -156,11 +151,11 @@ class Puzzle:
         # print()
        
         Puzzleindex = ((row * self.size) + column + 1)
-        if int(self.StateRepresentation[row][column]) == Puzzleindex:
-            # print("Position " + str(Puzzleindex) + " has the correct Tile: " + str(self.StateRepresentation[row][column]))
+        if int(self.State[row][column]) == Puzzleindex:
+            # print("Position " + str(Puzzleindex) + " has the correct Tile: " + str(self.State[row][column]))
             return True
         else: 
-            # print("Position " + str(Puzzleindex) + " has the wrong Tile: " + str(self.StateRepresentation[row][column]))
+            # print("Position " + str(Puzzleindex) + " has the wrong Tile: " + str(self.State[row][column]))
             return False
 
     def h1(self):
@@ -207,7 +202,7 @@ class Search:
     Marked = deque()
 
     def __init__(self,path):
-        self.initialState = Puzzle(str(path))
+        self.initialState = Node(str(path))
         self.OpenList = deque()
         self.ClosedList = deque()
         self.Marked = deque()
@@ -219,12 +214,12 @@ class Search:
             for column in range(node.size):
                 for direction in directions:
                 
-                    successor = Puzzle(node.statepath)
+                    successor = Node(node.statepath)
                     successor.SwapTile(row,column,direction)
                     node.child = successor
                     successor.parent = node
-                    successor.action = "Tile " + str(successor.StateRepresentation[row][column]) + " at position +[" + str(row) + "][" + str(column) + "] moved " + direction
-                        
+                    successor.depth = successor.parent.depth + 1
+
                     if successor.statepath not in self.Marked:
                         self.Marked.append(successor.statepath)
                         successors.append(successor)
@@ -237,19 +232,19 @@ class Search:
         
         self.OpenList.append(self.initialState)
         startTime = time.time()
-        statesvisited = 0
+
         while self.OpenList:
-            statesvisited += 1
-            if statesvisited % 1000 == 0:
-                print("states visited : " + str(statesvisited))
-                print("time elapsed = " + str(time.time() - startTime))
+            if time.time() - startTime < 60:
+                print("Search timed out after 60 seconds...")
+                break
             
             x = self.OpenList.pop()
             
             if x.TestGoalState():
                 print("Solved")
-                break
+                print("time elapsed = " + str(time.time() - startTime))
                 return True
+                break
             else:
                 children = self.Successor(x)
                 self.ClosedList.append(x)
@@ -257,41 +252,52 @@ class Search:
                     if state.statepath not in self.Marked:
                         self.Marked.append(state.statepath)
                     self.OpenList.append(state)     
-        return x.getRoot()
+        return False
         
     def DepthLimitedSearch(self,limit,node):
-            maxdepth = limit
+            result = False
 
-            if node.TestGoalState(): 
-                node.getRoot()
-                return True
-            
-            if limit <= 0: return False
-            
-            children = self.Successor(node)
+            self.OpenList.clear()
+            self.Marked.clear()
 
-            for child in children:
-                if self.DepthLimitedSearch((maxdepth - 1), child):
-                    return True
+            self.OpenList.append(self.initialState)
+
+            while self.OpenList:
+                x = self.OpenList.pop()
+                # print("ids state: " + str(x.statepath))
+                if x.TestGoalState(): 
+                    result = True
+                    return result
+                if  x.depth > limit: continue
+                
+                else:
+                    children = self.Successor(x)
+                    for state in children:
+                        if state.statepath not in self.Marked:
+                            self.Marked.append(state.statepath)
+                        self.OpenList.append(state)
         
-            return False
+            return result
             
-    def IterativeDeepeningSearch(self, node):
+    def IterativeDeepeningSearch(self):
+        
+
         print()
         print("Implementing IDS on ", end = '')
-        print(node.statepath)
+        print(self.initialState.statepath)
         print("---------------------------------------")
         startTime = time.time()
-        depth = 0
+        depthlimit = 0
         while time.time() - startTime < 60:
             
-            if depth % 10000 == 0:
+            if self.DepthLimitedSearch(depthlimit,self.initialState):
+                print("Success at depth: " + str(depthlimit + 1))
                 print("time elapsed = " + str(time.time() - startTime))
-            if self.DepthLimitedSearch(depth,node):
-                print("Success at depth: " + str(depth + 1))
                 return True
-            depth += 1
-        print("No solution found up to depth " + str(depth))
+            
+            depthlimit += 1
+        print("Search timed out after 60 seconds...")
+        print("No solution found up to depth " + str(depthlimit))
         return False
 
 
@@ -303,16 +309,13 @@ class Search:
         self.OpenList.append(self.initialState)
 
         startTime = time.time()
-        statesvisited = 0
+
         print()
         print("Implementing A* on ", end = '')
         print(self.initialState.statepath)
         print("---------------------------------------")
         while self.OpenList:
             search = False
-            statesvisited += 1
-            if statesvisited % 5000 == 0:
-                print("time elapsed = " + str(time.time() - startTime))
             
             if time.time() - startTime > 60:
                 print("Search timed out after 60 seconds ...")
@@ -323,9 +326,7 @@ class Search:
 
             #print("current state : " + str(x.statepath))
             if x.TestGoalState():
-                print("Solved")
-                root = x.getRoot()
-                print(x.printPath())
+                print("time elapsed = " + str(time.time() - startTime))
                 search = True
                 return search
                 break
@@ -418,7 +419,7 @@ def generateValidPuzzle(size,outnum):
 
     newpaths = []
     for path in paths:
-        path = Puzzle(path)
+        path = Node(path)
         for i in range(random.randint(1,10)):
             path.SwapTile(random.randint(0,2),random.randint(0,2),random.choice(direction))
         path.SetState()
@@ -437,16 +438,15 @@ for puzzlepaths in sn:
     search = Search(puzzlepaths)
     searchArr.append(search)
 
-searchArr[1] = Search("((2;5;3);"
+searchArr[0] = Search("((2;5;3);"
                         "(4;6;9);"
                         "(7;8;1))")
 
-# searchArr[2] = Search("((2;3;6);"
-#                         "(8;4;9);"
-#                         "(7;1;5)")
+searchArr[1] = Search("((1;2;3);"
+                        "(4;5;9);"
+                        "(7;8;6)")
 
 for i in range(len(searchArr)):
     searchArr[i].AstarSearch()
-    initialNode = searchArr[i].initialState
-    searchArr[i].IterativeDeepeningSearch(initialNode)
+    searchArr[i].IterativeDeepeningSearch()
 
