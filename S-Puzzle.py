@@ -364,7 +364,7 @@ class Search:
         self.Marked.clear()
         self.Frontier.put((0,self.initialState.statepath,self.initialState))
         startTime = time.time()
-        search = "Implementing A* (h1) on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
+        search = "Implementing A* (Hamming Distance) on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
         
         #Metrics
         elapsedtime = 0
@@ -423,7 +423,7 @@ class Search:
         self.Marked.clear()
         self.Frontier.put((0,self.initialState.statepath,self.initialState))
         startTime = time.time()
-        search = "Implementing A* (h2) on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
+        search = "Implementing A* (Manhattan Distance) on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
         
         #Metrics
         elapsedtime = 0
@@ -638,7 +638,7 @@ for i in range(len(searchArr)):
     
     f.close()
 
-
+#helper functions
 def calAverage(nums):
     total = 0
     for i in range(len(nums)):
@@ -656,46 +656,74 @@ def calNoSol(arr):
     
     return percent, noSols
 
-
+#print a final report
 f = open("Report.txt", "a")
-    f.write("A* 1\n")
-    f.write("________________________________________________________________________________\n")
-    average,total = calAverage(executionTimesA1)
-    f.write("AVERAGE EXECUTION TIME: " + str(average) + "\n"))
-    f.write("TOTAL EXECUTION TIME: " + str(total) + "\n"))
-    average,total = calAverage(costA1)
-    f.write("AVERAGE COST: " + str(average) + "\n"))
-    f.write("TOTAL COST: " + str(total) + "\n"))
-    average,total = calAverage(pathLengthA1)
-    f.write("AVERAGE PATH LENGTH: " + str(average) + "\n"))
-    f.write("TOTAL PATH LENGTH: " + str(total) + "\n"))
-    average,total = calNoSol(noSolutionA1)
-    f.write("AVERAGE NO SOLUTION: " + str(average) + "\n"))
-    f.write("TOTAL NO SOLUTION: " + str(total) + "\n"))
-    
+f.write("A* Hamming Distance\n")
+f.write("________________________________________________________________________________\n")
+average,total = calAverage(executionTimesA1)
+f.write("AVERAGE EXECUTION TIME: " + str(average) + "\n")
+f.write("TOTAL EXECUTION TIME: " + str(total) + "\n")
+average,total = calAverage(costA1)
+f.write("AVERAGE COST: " + str(average) + "\n")
+f.write("TOTAL COST: " + str(total) + "\n")
+average,total = calAverage(pathLengthA1)
+f.write("AVERAGE PATH LENGTH: " + str(average) + "\n")
+f.write("TOTAL PATH LENGTH: " + str(total) + "\n")
+average,total = calNoSol(noSolutionA1)
+f.write("AVERAGE NO SOLUTION: " + str(average) + "\n")
+f.write("TOTAL NO SOLUTION: " + str(total) + "\n")
+f.write("________________________________________________________________________________\n")
+f.write('\n')
 
+f.write("A* Manhattan Distance\n")
+f.write("________________________________________________________________________________\n")
+average,total = calAverage(executionTimesA2)
+f.write("AVERAGE EXECUTION TIME: " + str(average) + "\n")
+f.write("TOTAL EXECUTION TIME: " + str(total) + "\n")
+average,total = calAverage(costA2)
+f.write("AVERAGE COST: " + str(average) + "\n")
+f.write("TOTAL COST: " + str(total) + "\n")
+average,total = calAverage(pathLengthA2)
+f.write("AVERAGE PATH LENGTH: " + str(average) + "\n")
+f.write("TOTAL PATH LENGTH: " + str(total) + "\n")
+average,total = calNoSol(noSolutionA2)
+f.write("AVERAGE NO SOLUTION: " + str(average) + "\n")
+f.write("TOTAL NO SOLUTION: " + str(total) + "\n")
+f.write("________________________________________________________________________________\n")
+f.write('\n')
 
-    f.write("________________________________________________________________________________\n")
-    f.write('\n')
+f.write("IDS\n")
+f.write("________________________________________________________________________________\n")
+average,total = calAverage(executionTimesIDS)
+f.write("AVERAGE EXECUTION TIME: " + str(average) + "\n")
+f.write("TOTAL EXECUTION TIME: " + str(total) + "\n")
+average,total = calAverage(costIDS)
+f.write("AVERAGE COST: " + str(average) + "\n")
+f.write("TOTAL COST: " + str(total) + "\n")
+average,total = calAverage(pathLengthIDS)
+f.write("AVERAGE PATH LENGTH: " + str(average) + "\n")
+f.write("TOTAL PATH LENGTH: " + str(total) + "\n")
+average,total = calNoSol(noSolutionIDS)
+f.write("AVERAGE NO SOLUTION: " + str(average) + "\n")
+f.write("TOTAL NO SOLUTION: " + str(total) + "\n")
+f.write("________________________________________________________________________________\n")
+f.write('\n')
 
-    f.write("A* 2\n")
-    f.write("________________________________________________________________________________\n")
-    f.write("EXECUTION TIMES: ")
-    f.write(str(executionTimesA2))
-    f.write("________________________________________________________________________________\n")
-    f.write('\n')
+f.write("DFS\n")
+f.write("________________________________________________________________________________\n")
+average,total = calAverage(executionTimesDFS)
+f.write("AVERAGE EXECUTION TIME: " + str(average) + "\n")
+f.write("TOTAL EXECUTION TIME: " + str(total) + "\n")
+average,total = calAverage(costDFS)
+f.write("AVERAGE COST: " + str(average) + "\n")
+f.write("TOTAL COST: " + str(total) + "\n")
+average,total = calAverage(pathLengthDFS)
+f.write("AVERAGE PATH LENGTH: " + str(average) + "\n")
+f.write("TOTAL PATH LENGTH: " + str(total) + "\n")
+average,total = calNoSol(noSolutionDFS)
+f.write("AVERAGE NO SOLUTION: " + str(average) + "\n")
+f.write("TOTAL NO SOLUTION: " + str(total) + "\n")
+f.write("________________________________________________________________________________\n")
 
-    f.write("IDS\n")
-    f.write("________________________________________________________________________________\n")
-    f.write("EXECUTION TIMES: ")
-    f.write(str(executionTimesIDS))
-    f.write("________________________________________________________________________________\n")
-    f.write('\n')
-
-    f.write("DFS\n")
-    f.write("________________________________________________________________________________\n")
-    f.write("EXECUTION TIMES: ")
-    f.write(str(executionTimesDFS))
-    f.write("________________________________________________________________________________\n")
-    
+f.close()
 
