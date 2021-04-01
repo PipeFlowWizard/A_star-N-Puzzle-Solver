@@ -1,0 +1,38 @@
+Implementing A* (h1) on ((7;2;3);(1;5;6);(8;9;4))
+---------------------------------------
+((7;2;3);(1;5;6);(8;9;4))
+Tile 7 at postion [0][0] moved down
+ --> ((1;2;3);(7;5;6);(8;9;4))
+Tile 9 at postion [2][1] moved right
+ --> ((1;2;3);(7;5;6);(8;4;9))
+Tile 8 at postion [2][0] moved right
+ --> ((1;2;3);(7;5;6);(4;8;9))
+Tile 7 at postion [1][0] moved down
+ --> ((1;2;3);(4;5;6);(7;8;9))
+time elapsed = 0.012002229690551758
+
+Implementing IDS on ((7;2;3);(1;5;6);(8;9;4))
+---------------------------------------
+((7;2;3);(1;5;6);(8;9;4))
+Tile 9 at postion [2][1] moved right
+ --> ((7;2;3);(1;5;6);(8;4;9))
+Tile 8 at postion [2][0] moved right
+ --> ((7;2;3);(1;5;6);(4;8;9))
+Tile 7 at postion [0][0] moved down
+ --> ((1;2;3);(7;5;6);(4;8;9))
+Tile 7 at postion [1][0] moved down
+ --> ((1;2;3);(4;5;6);(7;8;9))
+
+Implementing A* (h2) on ((7;2;3);(1;5;6);(8;9;4))
+---------------------------------------
+((7;2;3);(1;5;6);(8;9;4))
+Tile 7 at postion [0][0] moved down
+ --> ((1;2;3);(7;5;6);(8;9;4))
+Tile 9 at postion [2][1] moved right
+ --> ((1;2;3);(7;5;6);(8;4;9))
+Tile 8 at postion [2][0] moved right
+ --> ((1;2;3);(7;5;6);(4;8;9))
+Tile 7 at postion [1][0] moved down
+ --> ((1;2;3);(4;5;6);(7;8;9))
+time elapsed = 0.012002944946289062
+

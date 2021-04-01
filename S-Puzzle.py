@@ -1,6 +1,8 @@
 import math
 import time
+import random
 from collections import deque
+from queue import PriorityQueue
 
 class Node:
     
@@ -26,14 +28,20 @@ class Node:
     
     def printPath(self):
         
-        
+        path = ""
+
         if self.parent == None:
             print(self.statepath)
+            path += self.statepath + "\n"
         else:
-            self.parent.printPath()
+            path += self.parent.printPath()
             print(self.action, end = '')
+            path += self.action
             print(" --> ", end = "")
+            path += " --> "
             print(self.statepath) 
+            path += self.statepath + '\n'
+        return path
 
         
 
@@ -141,7 +149,7 @@ class Node:
                 if not self.TestTilePosition(row,column):
                     return False
         print("Solved")
-        self.printPath()
+        
         return True
         
       
@@ -197,6 +205,7 @@ class Node:
         
 class Search:
 
+    Frontier = PriorityQueue()
     OpenList = deque()
     ClosedList = deque()
     Marked = deque()
@@ -206,6 +215,7 @@ class Search:
         self.OpenList = deque()
         self.ClosedList = deque()
         self.Marked = deque()
+        self.Frontier = PriorityQueue()
     
     def Successor(self,node):
         directions = ["up","down","left","right"]
@@ -226,6 +236,12 @@ class Search:
         return successors
 
     def DFS(self):
+
+        print()
+        print("Implementing DFS on ", end = '')
+        print(self.initialState.statepath)
+        print("---------------------------------------")
+        search = "Implementing DFS on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
         self.OpenList.clear()
         self.ClosedList.clear()
         self.Marked.clear()
@@ -233,17 +249,30 @@ class Search:
         self.OpenList.append(self.initialState)
         startTime = time.time()
 
+        elapsedtime = 0
+        solutionFound = False
+        cost = 0
+        pathLength = 0
+
         while self.OpenList:
-            if time.time() - startTime < 60:
+            if time.time() - startTime > 60:
                 print("Search timed out after 60 seconds...")
+                search += "Search timed out after 60 seconds...\n"
                 break
             
             x = self.OpenList.pop()
             
             if x.TestGoalState():
+
+                cost = x.depth
+                pathLength = x.depth
+                elapsedtime = time.time() - startTime
+                solutionFound = True
+
                 print("Solved")
-                print("time elapsed = " + str(time.time() - startTime))
-                return True
+                print("time elapsed = " + str(elapsedtime))
+                search += "time elapsed = " + str(elapsedtime) + "\n"
+                return search,elapsedtime,solutionFound,cost,pathLength
                 break
             else:
                 children = self.Successor(x)
@@ -252,22 +281,29 @@ class Search:
                     if state.statepath not in self.Marked:
                         self.Marked.append(state.statepath)
                     self.OpenList.append(state)     
-        return False
         
-    def DepthLimitedSearch(self,limit,node):
-            result = False
+        cost = x.depth
+        pathLength = x.depth
+        elapsedtime = 60
 
+        return search,elapsedtime,solutionFound,cost,pathLength
+        
+    def DepthLimitedSearch(self,limit,node,startTime):
+            result = False
+            search = ''
             self.OpenList.clear()
             self.Marked.clear()
 
             self.OpenList.append(self.initialState)
 
             while self.OpenList:
+                if time.time() - startTime > 60: break
                 x = self.OpenList.pop()
-                # print("ids state: " + str(x.statepath))
+                
                 if x.TestGoalState(): 
+                    search += x.printPath()
                     result = True
-                    return result
+                    return result, search
                 if  x.depth > limit: continue
                 
                 else:
@@ -277,58 +313,94 @@ class Search:
                             self.Marked.append(state.statepath)
                         self.OpenList.append(state)
         
-            return result
+            return result, search
             
     def IterativeDeepeningSearch(self):
-        
-
         print()
         print("Implementing IDS on ", end = '')
         print(self.initialState.statepath)
         print("---------------------------------------")
+        search = "Implementing IDS on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
         startTime = time.time()
         depthlimit = 0
+
+        elapsedtime = 60
+        solutionFound = False
+        cost = 0
+        pathLength = 0
+
         while time.time() - startTime < 60:
             
-            if self.DepthLimitedSearch(depthlimit,self.initialState):
-                print("Success at depth: " + str(depthlimit + 1))
-                print("time elapsed = " + str(time.time() - startTime))
-                return True
+            boolean,path = self.DepthLimitedSearch(depthlimit,self.initialState,startTime)
+            if boolean:
+                
+                solutionFound = True
+                elapsedtime = time.time() - startTime
+                cost = depthlimit + 1
+                pathLength = cost
+
+                print("Success at depth: " + str(cost))
+                print("time elapsed = " + str(elapsedtime))
+                search += path
+                return search,elapsedtime,solutionFound,cost,pathLength
+                break
             
             depthlimit += 1
         print("Search timed out after 60 seconds...")
         print("No solution found up to depth " + str(depthlimit))
-        return False
+        search += "Search timed out after 60 seconds...\n"
+        search += "No solution found up to depth " + str(depthlimit) + "\n"
+
+        cost = depthlimit + 1
+        pathLength = cost
+        elapsedtime = 60
+
+        return search,elapsedtime,solutionFound,cost,pathLength
 
 
     def AstarSearch(self):
-        self.OpenList.clear()
-        self.ClosedList.clear()
-        self.Marked.clear()
-        
-        self.OpenList.append(self.initialState)
 
+        self.Frontier = PriorityQueue()
+        self.Marked.clear()
+        self.Frontier.put((0,self.initialState.statepath,self.initialState))
         startTime = time.time()
+        search = "Implementing A* (h1) on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
+        
+        #Metrics
+        elapsedtime = 0
+        solutionFound = False
+        cost = 0
+        pathLength = 0
 
         print()
-        print("Implementing A* on ", end = '')
+        print("Implementing A* (h1) on ", end = '')
         print(self.initialState.statepath)
         print("---------------------------------------")
-        while self.OpenList:
-            search = False
-            
+
+        while not self.Frontier.empty():
+
             if time.time() - startTime > 60:
                 print("Search timed out after 60 seconds ...")
                 print("No solution found")
+                search += "Search timed out after 60 seconds ...\n"
+                search += "No solution found\n"
                 break
-            
-            x = self.OpenList.pop()
 
-            #print("current state : " + str(x.statepath))
+            y = self.Frontier.get()
+            x = y[2]
+            pathLength = x.depth
+
             if x.TestGoalState():
-                print("time elapsed = " + str(time.time() - startTime))
-                search = True
-                return search
+    
+                search += x.printPath()
+                elapsedtime = time.time() - startTime
+                cost = x.g(x.h1())
+                solutionFound = True
+
+                print("time elapsed = " + str(elapsedtime))
+                search += "time elapsed = " + str(elapsedtime) + "\n"
+
+                return search,elapsedtime,solutionFound,cost,pathLength
                 break
             else:
                 children = self.Successor(x)
@@ -336,15 +408,74 @@ class Search:
                 self.ClosedList.append(x)
                 
                 
-                minchild = x
+                
                 for state in children:
-                    if (state.h2() + state.g(state.h2())) <= (minchild.h2() + state.g(minchild.h2())):
-                         minchild = state
+                    
+                    score = state.h1() + state.g(state.h1())
+                    self.Frontier.put((score, state.statepath,state))
+    
+        
+        return search,elapsedtime,solutionFound,cost,pathLength
 
-                self.OpenList.append(minchild)     
-        return search
+    def AstarSearch2(self):
 
-import random
+        self.Frontier = PriorityQueue()
+        self.Marked.clear()
+        self.Frontier.put((0,self.initialState.statepath,self.initialState))
+        startTime = time.time()
+        search = "Implementing A* (h2) on " + str(self.initialState.statepath) + "\n" + "---------------------------------------\n"
+        
+        #Metrics
+        elapsedtime = 0
+        solutionFound = False
+        cost = 0
+        pathLength = 0
+
+        print()
+        print("Implementing A* (h2) on ", end = '')
+        print(self.initialState.statepath)
+        print("---------------------------------------")
+
+        while not self.Frontier.empty():
+
+            if time.time() - startTime > 60:
+                print("Search timed out after 60 seconds ...")
+                print("No solution found")
+                search += "Search timed out after 60 seconds ...\n"
+                search += "No solution found\n"
+                break
+
+            y = self.Frontier.get()
+            x = y[2]
+            pathLength = x.depth
+            if x.TestGoalState():
+    
+                search += x.printPath()
+                elapsedtime = time.time() - startTime
+                cost = x.g(x.h2())
+                solutionFound = True
+
+                print("time elapsed = " + str(elapsedtime))
+                search += "time elapsed = " + str(elapsedtime) + "\n"
+
+                return search,elapsedtime,solutionFound,cost,pathLength
+                break
+            else:
+                children = self.Successor(x)
+                
+                self.ClosedList.append(x)
+                
+                
+                
+                for state in children:
+                    
+                    score = state.h2() + state.g(state.h2())
+                    self.Frontier.put((score, state.statepath,state))
+    
+        
+        return search,elapsedtime,solutionFound,cost,pathLength
+
+
 def generateRandomPuzzle(size,outnum):
     statenums = []
     numbers = []
@@ -429,7 +560,29 @@ def generateValidPuzzle(size,outnum):
     return newpaths
 
 # MAIN ___________________________________________________________________________________________________________________________________________________________
-  
+
+executionTimesDFS = []
+executionTimesIDS = []
+executionTimesA1 = []
+executionTimesA2 = []
+
+noSolutionDFS = []
+noSolutionIDS = []
+noSolutionA1 = []
+noSolutionA2 = []
+
+costDFS = []
+costIDS = []
+costA1 = []
+costA2 = []
+
+pathLengthDFS = []
+pathLengthIDS = []
+pathLengthA1 = []
+pathLengthA2 = []
+
+
+
 sn = generateValidPuzzle(3,20)
 
 searchArr = []
@@ -438,15 +591,111 @@ for puzzlepaths in sn:
     search = Search(puzzlepaths)
     searchArr.append(search)
 
-searchArr[0] = Search("((2;5;3);"
-                        "(4;6;9);"
-                        "(7;8;1))")
+# searchArr[0] = Search("((1;6;3;4);"
+#                         "(5;2;10;8);"
+#                         "(9;16;7;11);"
+#                         "(13;14;15;12);")
 
 searchArr[1] = Search("((1;2;3);"
                         "(4;5;9);"
                         "(7;8;6)")
 
+# Compute each path using four different algorithms
 for i in range(len(searchArr)):
-    searchArr[i].AstarSearch()
-    searchArr[i].IterativeDeepeningSearch()
+    filename = str(i) + "_" + sn[i] + ".txt"
+    f = open(filename, "a")
+
+    search,elapsedtime,solutionFound,cost,pathLength = searchArr[i].AstarSearch()
+    executionTimesA1.append(elapsedtime)
+    noSolutionA1.append(solutionFound)
+    costA1.append(cost)
+    pathLengthA1.append(pathLength)
+    f.write(search)
+    f.write("\n")
+
+    search,elapsedtime,solutionFound,cost,pathLength = searchArr[i].IterativeDeepeningSearch()
+    executionTimesIDS.append(elapsedtime)
+    noSolutionIDS.append(solutionFound)
+    costIDS.append(cost)
+    pathLengthIDS.append(pathLength)
+    f.write(search)
+    f.write("\n")
+
+    search,elapsedtime,solutionFound,cost,pathLength = searchArr[i].AstarSearch2()
+    executionTimesA2.append(elapsedtime)
+    noSolutionA2.append(solutionFound)
+    costA2.append(cost)
+    pathLengthA2.append(pathLength)
+    f.write(search)
+    f.write("\n")
+
+    search,elapsedtime,solutionFound,cost,pathLength = searchArr[i].DFS()
+    executionTimesDFS.append(elapsedtime)
+    noSolutionDFS.append(solutionFound)
+    costDFS.append(cost)
+    pathLengthDFS.append(pathLength)
+    f.write(search)
+    
+    f.close()
+
+
+def calAverage(nums):
+    total = 0
+    for i in range(len(nums)):
+        total += nums[i]
+    average = total/len(nums)
+    return average,total
+
+def calNoSol(arr):
+    total = len(arr)
+    noSols = 0
+    for i in arr:
+        if i == False:
+            noSols += 1
+    percent = (noSols/total) * 100
+    
+    return percent, noSols
+
+
+f = open("Report.txt", "a")
+    f.write("A* 1\n")
+    f.write("________________________________________________________________________________\n")
+    average,total = calAverage(executionTimesA1)
+    f.write("AVERAGE EXECUTION TIME: " + str(average) + "\n"))
+    f.write("TOTAL EXECUTION TIME: " + str(total) + "\n"))
+    average,total = calAverage(costA1)
+    f.write("AVERAGE COST: " + str(average) + "\n"))
+    f.write("TOTAL COST: " + str(total) + "\n"))
+    average,total = calAverage(pathLengthA1)
+    f.write("AVERAGE PATH LENGTH: " + str(average) + "\n"))
+    f.write("TOTAL PATH LENGTH: " + str(total) + "\n"))
+    average,total = calNoSol(noSolutionA1)
+    f.write("AVERAGE NO SOLUTION: " + str(average) + "\n"))
+    f.write("TOTAL NO SOLUTION: " + str(total) + "\n"))
+    
+
+
+    f.write("________________________________________________________________________________\n")
+    f.write('\n')
+
+    f.write("A* 2\n")
+    f.write("________________________________________________________________________________\n")
+    f.write("EXECUTION TIMES: ")
+    f.write(str(executionTimesA2))
+    f.write("________________________________________________________________________________\n")
+    f.write('\n')
+
+    f.write("IDS\n")
+    f.write("________________________________________________________________________________\n")
+    f.write("EXECUTION TIMES: ")
+    f.write(str(executionTimesIDS))
+    f.write("________________________________________________________________________________\n")
+    f.write('\n')
+
+    f.write("DFS\n")
+    f.write("________________________________________________________________________________\n")
+    f.write("EXECUTION TIMES: ")
+    f.write(str(executionTimesDFS))
+    f.write("________________________________________________________________________________\n")
+    
 
