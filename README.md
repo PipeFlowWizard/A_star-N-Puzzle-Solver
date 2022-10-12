@@ -1,4 +1,4 @@
-# COMP-472 Assignment 2: N-Puzzle Solver
+# A* N-Puzzle Solver
  
 This project repository contains a custom implementation of the A* algorithm for the purpose of solving an N-Puzzle.
 
